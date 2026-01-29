@@ -21,6 +21,13 @@ test('login', async () => {
   expect(loginRes.body.user).toMatchObject(expectedUser);
 });
 
+test('bad endpoint', async () => {
+  const badRes = (await request(app).get('/wrong/api/name'));
+  expect(badRes.status).toBe(404);
+  
+  expect(badRes.body.message).toBe('unknown endpoint');
+});
+
 function expectValidJwt(potentialJwt) {
   expect(potentialJwt).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
 }
