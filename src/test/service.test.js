@@ -39,6 +39,14 @@ test('register new user', async () => {
   authToken = registerRes.body.token;
 });
 
+test('register error', async () => {
+  const badTestUser = { name: 'bad user', password: 'a' };
+  const registerRes = await request(app).post('/api/auth').send(badTestUser);
+
+  expect(registerRes.status).toBe(400);
+  expect(registerRes.body).toHaveProperty('message', 'name, email, and password are required');
+});
+
 test('bad endpoint', async () => {
   const badRes = (await request(app).get('/wrong/api/name'));
   expect(badRes.status).toBe(404);
