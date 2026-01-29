@@ -20,14 +20,15 @@ let franchiseId;
 let storeId;
 
 beforeAll(async () => {
-  dinerUser.email = 'reg@test.com';
+  dinerUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
   adminUser.email = 'auth@test.com';
 
   const dinerRes = await request(app).post('/api/auth').send(dinerUser);
   dinerToken = dinerRes.body.token;
 
 
-  const adminRes = await request(app).post('/api/auth').send(adminUser);
+  const adminRes = await request(app).put('/api/auth').send({ email: 'a@jwt.com', password: 'admin' });
+
   adminToken = adminRes.body.token;
   adminId = adminRes.body.user.id;
 });
@@ -46,4 +47,23 @@ test('non-admin cannot create franchise', async () => {
 
   expect(res.status).toBe(403);
   expect(res.body.message).toBe('unable to create a franchise');
+});
+
+test('admin can create franchise', async () => {
+  const franchiseName = 'pizzaPocket-' + Math.random().toString(36).substring(2, 8);
+
+  const res = await request(app)
+    .post('/api/franchise')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      name: franchiseName,
+      admins: [{ email: 'a@jwt.com' }],
+    });
+
+  expect(res.status).toBe(200);
+  expect(res.body).toHaveProperty('id');
+  expect(res.body.name).toBe(franchiseName);
+  expect(res.body.admins[0].email).toBe('a@jwt.com');
+
+  franchiseId = res.body.id;
 });
