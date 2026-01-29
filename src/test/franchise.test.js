@@ -84,3 +84,17 @@ test('unauthorized user franchises access returns empty list', async () => {
   expect(res.status).toBe(200);
   expect(res.body).toEqual([]);
 });
+
+test('admin can create store', async () => {
+  const res = await request(app)
+    .post(`/api/franchise/${franchiseId}/store`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ name: 'SLC' });
+
+  expect(res.status).toBe(200);
+  expect(res.body).toHaveProperty('id');
+  expect(res.body.name).toBe('SLC');
+  expect(res.body.totalRevenue).toBeUndefined();
+
+  storeId = res.body.id;
+});
