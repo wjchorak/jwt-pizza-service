@@ -47,6 +47,13 @@ test('register error', async () => {
   expect(registerRes.body).toHaveProperty('message', 'name, email, and password are required');
 });
 
+test('logout authorized user', async () => {
+  const logoutRes = await request(app).delete('/api/auth').set('Authorization', `Bearer ${authToken}`);
+
+  expect(logoutRes.status).toBe(200);
+  expect(logoutRes.body.message).toBe('logout successful');
+});
+
 test('bad endpoint', async () => {
   const badRes = (await request(app).get('/wrong/api/name'));
   expect(badRes.status).toBe(404);
