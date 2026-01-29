@@ -36,7 +36,7 @@ test('register new user', async () => {
   expect(registerRes.body.user).toMatchObject(expectedUser);
   expect(registerRes.body.user).toHaveProperty('id');
 
-  authToken = registerRes.body.token;
+  testUserAuthToken = registerRes.body.token;
 });
 
 test('register error', async () => {
@@ -48,7 +48,7 @@ test('register error', async () => {
 });
 
 test('logout authorized user', async () => {
-  const logoutRes = await request(app).delete('/api/auth').set('Authorization', `Bearer ${authToken}`);
+  const logoutRes = await request(app).delete('/api/auth').set('Authorization', `Bearer ${testUserAuthToken}`);
 
   expect(logoutRes.status).toBe(200);
   expect(logoutRes.body.message).toBe('logout successful');
