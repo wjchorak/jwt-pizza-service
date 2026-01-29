@@ -28,6 +28,14 @@ test('bad endpoint', async () => {
   expect(badRes.body.message).toBe('unknown endpoint');
 });
 
+test('about', async () => {
+  const aboutRes = await request(app).get('/');
+
+  expect(aboutRes.status).toBe(200);
+  expect(aboutRes.body).toHaveProperty('message','welcome to JWT Pizza');
+  expect(aboutRes.body).toHaveProperty('version');
+});
+
 function expectValidJwt(potentialJwt) {
   expect(potentialJwt).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
 }
