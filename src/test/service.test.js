@@ -36,6 +36,18 @@ test('about', async () => {
   expect(aboutRes.body).toHaveProperty('version');
 });
 
+test('docs', async () => {
+  const docRes = await request(app).get('/api/docs');
+
+  expect(docRes.status).toBe(200);
+
+  expect(docRes.body).toHaveProperty('version');
+  expect(docRes.body).toHaveProperty('endpoints');
+  expect(docRes.body).toHaveProperty('config');
+  expect(docRes.body.config).toHaveProperty('factory');
+  expect(docRes.body.config).toHaveProperty('db');
+});
+
 function expectValidJwt(potentialJwt) {
   expect(potentialJwt).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
 }
