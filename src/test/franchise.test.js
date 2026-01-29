@@ -67,3 +67,11 @@ test('admin can create franchise', async () => {
 
   franchiseId = res.body.id;
 });
+
+test('get user franchises (self)', async () => {
+  const res = await request(app).get(`/api/franchise/${adminId}`).set('Authorization', `Bearer ${adminToken}`);
+
+  expect(res.status).toBe(200);
+  expect(Array.isArray(res.body)).toBe(true);
+  expect(res.body[0]).toHaveProperty('id', franchiseId);
+});
