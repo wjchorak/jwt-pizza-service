@@ -21,6 +21,24 @@ test('login', async () => {
   expect(loginRes.body.user).toMatchObject(expectedUser);
 });
 
+test('register new user', async () => {
+  const registerRes = await request(app).post('/api/auth').send(testUser);
+
+  expect(registerRes.status).toBe(200);
+  expectValidJwt(registerRes.body.token);
+
+  const expectedUser = {
+    name: testUser.name,
+    email: testUser.email,
+    roles: [{ role: 'diner' }],
+  };
+
+  expect(registerRes.body.user).toMatchObject(expectedUser);
+  expect(registerRes.body.user).toHaveProperty('id');
+
+  authToken = registerRes.body.token;
+});
+
 test('bad endpoint', async () => {
   const badRes = (await request(app).get('/wrong/api/name'));
   expect(badRes.status).toBe(404);
