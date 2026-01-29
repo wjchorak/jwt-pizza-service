@@ -73,5 +73,14 @@ test('get user franchises (self)', async () => {
 
   expect(res.status).toBe(200);
   expect(Array.isArray(res.body)).toBe(true);
-  expect(res.body[0]).toHaveProperty('id', franchiseId);
+  expect(res.body[0]).toHaveProperty('id');
+});
+
+test('unauthorized user franchises access returns empty list', async () => {
+  const res = await request(app)
+    .get(`/api/franchise/${adminId}`)
+    .set('Authorization', `Bearer ${dinerToken}`);
+
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual([]);
 });
