@@ -31,3 +31,12 @@ beforeAll(async () => {
   adminToken = adminRes.body.token;
   adminId = adminRes.body.user.id;
 });
+
+test('list franchises (public)', async () => {
+  const res = await request(app).get('/api/franchise?page=0&limit=10');
+
+  expect(res.status).toBe(200);
+  expect(res.body).toHaveProperty('franchises');
+  expect(res.body).toHaveProperty('more');
+  expect(Array.isArray(res.body.franchises)).toBe(true);
+});
