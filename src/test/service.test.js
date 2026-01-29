@@ -54,6 +54,13 @@ test('logout authorized user', async () => {
   expect(logoutRes.body.message).toBe('logout successful');
 });
 
+test('logout without token fails', async () => {
+  const logoutRes = await request(app).delete('/api/auth');
+
+  expect(logoutRes.status).toBe(401);
+  expect(logoutRes.body.message).toBe('unauthorized');
+});
+
 test('bad endpoint', async () => {
   const badRes = (await request(app).get('/wrong/api/name'));
   expect(badRes.status).toBe(404);
