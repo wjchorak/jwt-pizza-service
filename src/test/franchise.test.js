@@ -40,3 +40,10 @@ test('list franchises (public)', async () => {
   expect(res.body).toHaveProperty('more');
   expect(Array.isArray(res.body.franchises)).toBe(true);
 });
+
+test('non-admin cannot create franchise', async () => {
+  const res = await request(app).post('/api/franchise').set('Authorization', `Bearer ${dinerToken}`).send({ name: 'pizzaPocket' });
+
+  expect(res.status).toBe(403);
+  expect(res.body.message).toBe('unable to create a franchise');
+});
