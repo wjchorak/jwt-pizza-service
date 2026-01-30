@@ -11,6 +11,7 @@ const dinerUser = {
 let dinerToken;
 let adminToken;
 let adminId;
+let adminEmail;
 let franchiseId;
 let storeId;
 
@@ -28,6 +29,7 @@ beforeAll(async () => {
 
   adminToken = adminRes.body.token;
   adminId = adminRes.body.user.id;
+  adminEmail = adminUser.email;
 });
 
 test('list franchises (public)', async () => {
@@ -54,13 +56,13 @@ test('admin can create franchise', async () => {
     .set('Authorization', `Bearer ${adminToken}`)
     .send({
       name: franchiseName,
-      admins: [{ email: 'a@jwt.com' }],
+      admins: [{ email: adminEmail }],
     });
 
   expect(res.status).toBe(200);
   expect(res.body).toHaveProperty('id');
   expect(res.body.name).toBe(franchiseName);
-  expect(res.body.admins[0].email).toBe('a@jwt.com');
+  expect(res.body.admins[0].email).toBe(adminEmail);
 
   franchiseId = res.body.id;
 });
