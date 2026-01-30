@@ -42,6 +42,36 @@ test('add menu item as non-admin', async () => {
   expect(addMenuItemRes.body.message).toBe('unable to add menu item');
 });
 
+test('create order for authenticated user', async () => {
+  const orderRequest = {
+    franchiseId: 1,
+    storeId: 1,
+    items: [{ menuId: 1, description: 'Veggie', price: 0.05 }]
+  };
+
+  const createOrderRes = await request(app)
+    .post('/api/order')
+    .set('Authorization', `Bearer ${testUserAuthToken}`)
+    .send(orderRequest);
+
+  expect(createOrderRes.status).toBe(200);
+  expect(createOrderRes.body).toHaveProperty('order');
+  expect(createOrderRes.body.order).toHaveProperty('id');
+  expect(createOrderRes.body).toHaveProperty('jwt');
+});
+
+test('get orders for authenticated user', async () => {
+  const ordersRes = await request(app)
+    .get('/api/order')
+    .set('Authorization', `Bearer ${testUserAuthToken}`);
+
+  expect(ordersRes.status).toBe(200);
+  expect(ordersRes.body).toHaveProperty('orders');
+  expect(ordersRes.body.orders).toBeInstanceOf(Array);
+  expect(ordersRes.body.orders[0]).toHaveProperty('id');
+  expect(ordersRes.body.orders[0]).toHaveProperty('items');
+});
+
 function expectValidJwt(potentialJwt) {
   expect(potentialJwt).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
 }
