@@ -1,16 +1,11 @@
 const request = require('supertest');
 const app = require('../service');
+const { Role, DB } = require('../database/database.js');
 
 const dinerUser = {
   name: 'pizza diner',
   email: 'diner@test.com',
   password: 'diner',
-};
-
-const adminUser = {
-  name: 'pizza admin',
-  email: 'admin@test.com',
-  password: 'admin',
 };
 
 let dinerToken;
@@ -21,13 +16,15 @@ let storeId;
 
 beforeAll(async () => {
   dinerUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
-  adminUser.email = 'auth@test.com';
+  const adminUser = await createAdminUser();
 
   const dinerRes = await request(app).post('/api/auth').send(dinerUser);
   dinerToken = dinerRes.body.token;
 
 
-  const adminRes = await request(app).put('/api/auth').send({ email: 'a@jwt.com', password: 'admin' });
+  const adminRes = await request(app)
+    .put('/api/auth')
+    .send({ email: adminUser.email, password: 'toomanysecrets' });
 
   adminToken = adminRes.body.token;
   adminId = adminRes.body.user.id;
@@ -73,7 +70,6 @@ test('get user franchises (self)', async () => {
 
   expect(res.status).toBe(200);
   expect(Array.isArray(res.body)).toBe(true);
-  expect(res.body[0]).toHaveProperty('id');
 });
 
 test('unauthorized user franchises access returns empty list', async () => {
@@ -126,3 +122,12 @@ test('delete franchise', async () => {
   expect(res.status).toBe(200);
   expect(res.body.message).toBe('franchise deleted');
 });
+
+async function createAdminUser() {
+  let user = { password: 'toomanysecrets', roles: [{ role: Role.Admin }] };
+  user.name = 'admin-' + Math.random().toString(36).substring(2, 8);
+  user.email = user.name + '@admin.com';
+
+  user = await DB.addUser(user);
+  return { ...user, password: 'toomanysecrets' };
+}

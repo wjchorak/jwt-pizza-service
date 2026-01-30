@@ -7,19 +7,12 @@ const dinerUser = {
   password: 'diner',
 };
 
-const adminUser = {
-  name: 'pizza admin',
-  email: 'admin@test.com',
-  password: 'admin',
-};
-
 let dinerToken;
 let dinerId;
 
 beforeAll(async () => {
   dinerUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
-  adminUser.email = 'auth@test.com';
-
+  
   const dinerRes = await request(app).post('/api/auth').send(dinerUser);
   dinerToken = dinerRes.body.token;
   dinerId = dinerRes.body.user.id;
