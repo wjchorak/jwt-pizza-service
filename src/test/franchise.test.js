@@ -108,3 +108,12 @@ test('non-admin cannot create store', async () => {
   expect(res.status).toBe(403);
   expect(res.body.message).toBe('unable to create a store');
 });
+
+test('admin can delete store', async () => {
+  const res = await request(app)
+    .delete(`/api/franchise/${franchiseId}/store/${storeId}`)
+    .set('Authorization', `Bearer ${adminToken}`);
+
+  expect(res.status).toBe(200);
+  expect(res.body.message).toBe('store deleted');
+});
