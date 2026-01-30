@@ -98,3 +98,13 @@ test('admin can create store', async () => {
 
   storeId = res.body.id;
 });
+
+test('non-admin cannot create store', async () => {
+  const res = await request(app)
+    .post(`/api/franchise/${franchiseId}/store`)
+    .set('Authorization', `Bearer ${dinerToken}`)
+    .send({ name: 'FAIL' });
+
+  expect(res.status).toBe(403);
+  expect(res.body.message).toBe('unable to create a store');
+});
