@@ -25,6 +25,23 @@ test('get pizza menu', async () => {
   expect(menuRes.body[0]).toHaveProperty('description');
 });
 
+test('add menu item as non-admin', async () => {
+  const newMenuItem = {
+    title: 'Student',
+    description: 'No topping, no sauce, just carbs',
+    image: 'pizza9.png',
+    price: 0.0001
+  };
+
+  const addMenuItemRes = await request(app)
+    .put('/api/order/menu')
+    .set('Authorization', `Bearer ${testUserAuthToken}`)
+    .send(newMenuItem);
+
+  expect(addMenuItemRes.status).toBe(403);
+  expect(addMenuItemRes.body.message).toBe('unable to add menu item');
+});
+
 function expectValidJwt(potentialJwt) {
   expect(potentialJwt).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
 }
