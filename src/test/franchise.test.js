@@ -117,3 +117,12 @@ test('admin can delete store', async () => {
   expect(res.status).toBe(200);
   expect(res.body.message).toBe('store deleted');
 });
+
+
+test('delete franchise', async () => {
+  const res = await request(app)
+    .delete(`/api/franchise/${franchiseId}`);
+
+  expect(res.status).toBe(200);
+  expect(res.body.message).toBe('franchise deleted');
+});
