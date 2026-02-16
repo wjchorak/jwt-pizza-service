@@ -53,10 +53,16 @@ test('list users unauthorized', async () => {
 
 test('list users', async () => {
   const [user, userToken] = await registerUser(request(app));
+
   const listUsersRes = await request(app)
     .get('/api/user')
     .set('Authorization', 'Bearer ' + userToken);
+
+  console.log('STATUS:', listUsersRes.status);
+  console.log('BODY:', listUsersRes.body);
+
   expect(listUsersRes.status).toBe(200);
+  expect(Array.isArray(listUsersRes.body.users)).toBe(true);
 });
 
 async function registerUser(service) {
