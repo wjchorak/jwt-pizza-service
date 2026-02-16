@@ -51,19 +51,39 @@ test('list users unauthorized', async () => {
   expect(listUsersRes.status).toBe(401);
 });
 
-test('list users', async () => {
+test('list users forbidden for non-admin', async () => {
   const [user, userToken] = await registerUser(request(app));
 
-  const listUsersRes = await request(app)
+  const res = await request(app)
     .get('/api/user')
     .set('Authorization', 'Bearer ' + userToken);
 
-  console.log('STATUS:', listUsersRes.status);
-  console.log('BODY:', listUsersRes.body);
+  expect(res.status).toBe(403);
+});
+
+test('list users as admin', async () => {
+  const loginRes = await request(app)
+    .put('/api/auth')
+    .send({ email: 'a@jwt.com', password: 'admin' });
+
+  const adminToken = loginRes.body.token;
+
+  const listUsersRes = await request(app)
+    .get('/api/user')
+    .set('Authorization', 'Bearer ' + adminToken);
 
   expect(listUsersRes.status).toBe(200);
+  expect(listUsersRes.body).toHaveProperty('users');
   expect(Array.isArray(listUsersRes.body.users)).toBe(true);
+  expect(listUsersRes.body.users.length).toBeGreaterThan(0);
+
+  const firstUser = listUsersRes.body.users[0];
+  expect(firstUser).toHaveProperty('id');
+  expect(firstUser).toHaveProperty('name');
+  expect(firstUser).toHaveProperty('email');
+  expect(firstUser).toHaveProperty('roles');
 });
+
 
 async function registerUser(service) {
   const testUser = {
