@@ -52,7 +52,7 @@ test('list users unauthorized', async () => {
 });
 
 test('list users forbidden for non-admin', async () => {
-  const [user, userToken] = await registerUser(request(app));
+  const [, userToken] = await registerUser(request(app));
 
   const res = await request(app)
     .get('/api/user')
