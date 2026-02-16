@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../service');
+const { Role, DB } = require('../database/database.js');
 
 const dinerUser = {
   name: 'pizza diner',
@@ -9,13 +10,25 @@ const dinerUser = {
 
 let dinerToken;
 let dinerId;
+let adminToken;
 
 beforeAll(async () => {
   dinerUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
-  
-  const dinerRes = await request(app).post('/api/auth').send(dinerUser);
+
+  const dinerRes = await request(app)
+    .post('/api/auth')
+    .send(dinerUser);
+
   dinerToken = dinerRes.body.token;
   dinerId = dinerRes.body.user.id;
+
+  const adminUser = await createAdminUser();
+
+  const adminRes = await request(app)
+    .put('/api/auth')
+    .send({ email: adminUser.email, password: 'toomanysecrets' });
+
+  adminToken = adminRes.body.token;
 });
 
 test('get authenticated user', async () => {
@@ -32,7 +45,11 @@ test('get authenticated user', async () => {
 });
 
 test('update user', async () => {
-  const updatedUserData = { name: 'Updated Name', email: 'updated@test.com', password: 'newpassword' };
+  const updatedUserData = { 
+    name: 'Updated Name', 
+    email: 'updated@test.com', 
+    password: 'newpassword' 
+  };
 
   const res = await request(app)
     .put(`/api/user/${dinerId}`)
@@ -52,25 +69,17 @@ test('list users unauthorized', async () => {
 });
 
 test('list users forbidden for non-admin', async () => {
-  const [, userToken] = await registerUser(request(app));
-
   const res = await request(app)
     .get('/api/user')
-    .set('Authorization', 'Bearer ' + userToken);
+    .set('Authorization', `Bearer ${dinerToken}`);
 
   expect(res.status).toBe(403);
 });
 
 test('list users as admin', async () => {
-  const loginRes = await request(app)
-    .put('/api/auth')
-    .send({ email: 'a@jwt.com', password: 'admin' });
-
-  const adminToken = loginRes.body.token;
-
   const listUsersRes = await request(app)
     .get('/api/user')
-    .set('Authorization', 'Bearer ' + adminToken);
+    .set('Authorization', `Bearer ${adminToken}`);
 
   expect(listUsersRes.status).toBe(200);
   expect(listUsersRes.body).toHaveProperty('users');
@@ -84,19 +93,16 @@ test('list users as admin', async () => {
   expect(firstUser).toHaveProperty('roles');
 });
 
-
-async function registerUser(service) {
-  const testUser = {
-    name: 'pizza diner',
-    email: `${randomName()}@test.com`,
-    password: 'a',
+async function createAdminUser() {
+  let user = {
+    password: 'toomanysecrets',
+    roles: [{ role: Role.Admin }],
   };
-  const registerRes = await service.post('/api/auth').send(testUser);
-  registerRes.body.user.password = testUser.password;
 
-  return [registerRes.body.user, registerRes.body.token];
-}
+  user.name = 'admin-' + Math.random().toString(36).substring(2, 8);
+  user.email = user.name + '@admin.com';
 
-function randomName() {
-  return Math.random().toString(36).substring(2, 12);
+  user = await DB.addUser(user);
+
+  return { ...user, password: 'toomanysecrets' };
 }
