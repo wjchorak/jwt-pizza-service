@@ -78,13 +78,13 @@ class DB {
   async getUsers(page = 0, limit = 10, nameFilter = '*') {
     const connection = await this.getConnection();
     try {
-      const offset = page * limit;
+      const offset = Number(page) * Number(limit);
       nameFilter = nameFilter.replace(/\*/g, '%');
 
       const users = await this.query(
         connection,
-        `SELECT id, name, email FROM user WHERE name LIKE ? LIMIT ? OFFSET ?`,
-        [nameFilter, Number(limit), Number(offset)]
+        `SELECT id, name, email FROM user WHERE name LIKE ? LIMIT ${Number(limit)} OFFSET ${offset}`,
+        [nameFilter]
       );
 
       for (const user of users) {
