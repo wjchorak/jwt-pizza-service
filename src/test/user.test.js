@@ -45,3 +45,8 @@ test('update user', async () => {
   expect(res.body.user.email).toBe(updatedUserData.email);
   expect(res.body.token).toBeDefined();
 });
+
+test('list users', async () => {
+  const listUsersRes = await request(app).get('/api/user');
+  expect(listUsersRes.status).toBe(200);
+});
