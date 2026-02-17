@@ -117,6 +117,14 @@ describe('delete user endpoint', () => {
 
     expect(res.status).toBe(401);
   });
+
+  test('delete user non-admin', async () => {
+    const res = await request(app)
+      .delete(`/api/user/${userIdToDelete}`)
+      .set('Authorization', `Bearer ${dinerToken}`);
+
+    expect(res.status).toBe(403);
+  });
 });
 
 async function createAdminUser() {
