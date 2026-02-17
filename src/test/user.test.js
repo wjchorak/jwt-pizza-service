@@ -133,6 +133,18 @@ describe('delete user endpoint', () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('message');
+
+    const listUsersRes = await request(app)
+      .get('/api/user?limit=1000')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(listUsersRes.status).toBe(200);
+
+    const deletedUser = listUsersRes.body.users.find(
+      (u) => u.id === userIdToDelete
+    );
+
+    expect(deletedUser).toBeUndefined();
   });
 });
 
