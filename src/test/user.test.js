@@ -93,6 +93,32 @@ test('list users as admin', async () => {
   expect(firstUser).toHaveProperty('roles');
 });
 
+describe('delete user endpoint', () => {
+  let userIdToDelete;
+
+  beforeAll(async () => {
+    const userToDelete = {
+      name: 'delete-me',
+      email: Math.random().toString(36).substring(2, 12) + '@delete.com',
+      password: 'deletepassword',
+    };
+
+    const createRes = await request(app)
+      .post('/api/auth')
+      .send(userToDelete);
+
+    expect(createRes.status).toBe(200);
+    userIdToDelete = createRes.body.user.id;
+  });
+
+  test('delete user unauthorized (no token)', async () => {
+    const res = await request(app)
+      .delete(`/api/user/${userIdToDelete}`);
+
+    expect(res.status).toBe(401);
+  });
+});
+
 async function createAdminUser() {
   let user = {
     password: 'toomanysecrets',
