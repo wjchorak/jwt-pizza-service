@@ -81,7 +81,7 @@ userRouter.delete(
     }
     
     await DB.deleteUser(userId);
-    
+
     res.json({ message: 'user deleted' });
   })
 );
@@ -97,13 +97,13 @@ userRouter.get(
 
     const { page = 0, limit = 10, name = '*' } = req.query;
 
-    const users = await DB.getUsers(
+    const [users, more] = await DB.getUsers(
       Number(page),
       Number(limit),
       name
     );
 
-    res.json({ users });
+    res.json({ users, more });
   })
 );
 
