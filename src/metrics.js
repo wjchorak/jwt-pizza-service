@@ -10,6 +10,11 @@ const pizzaMetrics = {
   failureCount: 0
 };
 
+const authMetrics = {
+  success: 0,
+  failure: 0
+}
+
 function requestTracker(req, res, next) {
   const endpoint = `[${req.method}] ${req.path}`;
   requests[endpoint] = (requests[endpoint] || 0) + 1;
@@ -40,6 +45,11 @@ function pizzaPurchase(success, latency, price) {
   }
 }
 
+function authResult(success) {
+  if(success) authMetrics.success += 1;
+  else authMetrics.failure += 1;
+}
+
 setInterval(() => {
   const metrics = [];
   Object.keys(requests).forEach((endpoint) => {
@@ -57,6 +67,10 @@ setInterval(() => {
   metrics.push(createMetric('pizzaLatency', pizzaMetrics.latencyTotal, 'ms', 'sum', 'asInt'));
 
   metrics.push(createMetric('pizzaFails', pizzaMetrics.failureCount, '1', 'sum', 'asInt'));
+
+  metrics.push(createMetric('authSuccess', authMetrics.success, '1', 'sum', 'asInt'));
+
+  metrics.push(createMetric('authFail', authMetrics.failure, '1', 'sum', 'asInt'));
 
   sendMetricToGrafana(metrics);
 }, 10000);
@@ -121,4 +135,4 @@ function sendMetricToGrafana(metrics) {
     });
 }
 
-module.exports = { requestTracker, pizzaPurchase };
+module.exports = { requestTracker, pizzaPurchase, authResult };
