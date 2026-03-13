@@ -3,6 +3,13 @@ const os = require('os');
 
 const requests = {};
 
+const pizzaMetrics = {
+  revenue: 0,
+  latencyTotal: 0,
+  successCount: 0,
+  failureCount: 0
+};
+
 function requestTracker(req, res, next) {
   const endpoint = `[${req.method}] ${req.path}`;
   requests[endpoint] = (requests[endpoint] || 0) + 1;
@@ -22,6 +29,17 @@ function getMemoryUsagePercentage() {
   return memoryUsage.toFixed(2);
 }
 
+function pizzaPurchase(success, latency, price) {
+  if(success) {
+    pizzaMetrics.revenue += price;
+    pizzaMetrics.latencyTotal += latency;
+    pizzaMetrics.successCount += 1;
+  }
+  else {
+    pizzaMetrics.failureCount += 1;
+  }
+}
+
 setInterval(() => {
   const metrics = [];
   Object.keys(requests).forEach((endpoint) => {
@@ -31,6 +49,14 @@ setInterval(() => {
   metrics.push(createMetric('cpuUsagePercentage', getCpuUsagePercentage(), '%', 'gauge', 'asDouble'));
 
   metrics.push(createMetric('memoryUsagePercentage', getMemoryUsagePercentage(), '%', 'gauge', 'asDouble'));
+
+  metrics.push(createMetric('pizzaSold', pizzaMetrics.successCount, '1', 'sum', 'asInt'));
+
+  metrics.push(createMetric('pizzaRevenue', pizzaMetrics.revenue, 'BTC', 'sum', 'asInt'));
+
+  metrics.push(createMetric('pizzaLatency', pizzaMetrics.latencyTotal, 'ms', 'sum', 'asInt'));
+
+  metrics.push(createMetric('pizzaFails', pizzaMetrics.failureCount, '1', 'sum', 'asInt'));
 
   sendMetricToGrafana(metrics);
 }, 10000);
@@ -95,4 +121,4 @@ function sendMetricToGrafana(metrics) {
     });
 }
 
-module.exports = { requestTracker };
+module.exports = { requestTracker, pizzaPurchase };
