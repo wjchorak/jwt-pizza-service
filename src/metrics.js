@@ -17,7 +17,19 @@ const authMetrics = {
 
 function requestTracker(req, res, next) {
   const endpoint = `[${req.method}] ${req.path}`;
-  requests[endpoint] = (requests[endpoint] || 0) + 1;
+  const startTime = Date.now();
+
+  if (!requests[endpoint]) {
+    requests[endpoint] = { count: 0, reqLatency: 0 };
+  }
+
+  requests[endpoint].count += 1;
+
+  res.on('finish', () => {
+    const latency = Date.now() - startTime;
+    requests[endpoint].reqLatency += latency;
+  });
+
   next();
 }
 
@@ -53,7 +65,11 @@ function authResult(success) {
 setInterval(() => {
   const metrics = [];
   Object.keys(requests).forEach((endpoint) => {
-    metrics.push(createMetric('requests', requests[endpoint], '1', 'sum', 'asInt', { endpoint }));
+    const endpointMetrics = requests[endpoint];
+
+    metrics.push(createMetric('requests', endpointMetrics.count, '1', 'sum', 'asInt', { endpoint }));
+
+    metrics.push(createMetric('endpointLatency', endpointMetrics.reqLatency, 'ms', 'sum', 'asDouble', { endpoint }));
   });
 
   metrics.push(createMetric('cpuUsagePercentage', getCpuUsagePercentage(), '%', 'gauge', 'asDouble'));
