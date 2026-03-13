@@ -112,6 +112,15 @@ class DB {
     }
   }
 
+  async getActiveUserCount() {
+    const connection = await this.getConnection();
+    try {
+      const rows = await this.query(connection, `SELECT COUNT(*) AS count FROM auth`);
+      return rows[0].count;
+    } finally {
+      connection.end();
+    }
+  }
 
   async updateUser(userId, name, email, password) {
     const connection = await this.getConnection();
