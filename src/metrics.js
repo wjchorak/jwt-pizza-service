@@ -1,4 +1,5 @@
 const config = require('./config');
+const { DB } = require('./database/database.js');
 const os = require('os');
 
 const requests = {};
@@ -62,7 +63,7 @@ function authResult(success) {
   else authMetrics.failure += 1;
 }
 
-setInterval(() => {
+setInterval(async () => {
   const metrics = [];
   Object.keys(requests).forEach((endpoint) => {
     const endpointMetrics = requests[endpoint];
@@ -87,6 +88,10 @@ setInterval(() => {
   metrics.push(createMetric('authSuccess', authMetrics.success, '1', 'sum', 'asInt'));
 
   metrics.push(createMetric('authFail', authMetrics.failure, '1', 'sum', 'asInt'));
+
+  const activeUsers = await DB.getActiveUserCount();
+
+  metrics.push(createMetric('activeUsers', activeUsers, '1', 'gauge', 'asInt'));
 
   sendMetricToGrafana(metrics);
 }, 10000);
