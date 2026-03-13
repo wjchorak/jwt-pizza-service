@@ -51,6 +51,12 @@ jobs:
               },
               listPerPage: 10,
             },
+            metrics: {
+              source: 'jwt-pizza-service',
+              endpointUrl: '${{ secrets.METRICS_ENDPOINT_URL, }}',
+              apiKey: '${{ secrets.METRICS_API_KEY }}',
+              accountId: '${{ secrets.METRICS_ACCOUNT_ID_KEY }}',
+            },
             factory: {
               url: 'https://pizza-factory.cs329.click',
               apiKey: '${{ secrets.FACTORY_API_KEY }}',
