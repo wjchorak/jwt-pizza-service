@@ -35,7 +35,7 @@ function requestTracker(req, res, next) {
 }
 
 function getCpuUsagePercentage() {
-  const cpuUsage = os.loadavg()[0] / os.cpus().length();
+  const cpuUsage = os.loadavg()[0] / os.cpus().length;
   return cpuUsage.toFixed(2) * 100;
 }
 
@@ -79,7 +79,7 @@ setInterval(async () => {
 
   metrics.push(createMetric('pizzaSold', pizzaMetrics.successCount, '1', 'sum', 'asInt'));
 
-  metrics.push(createMetric('pizzaRevenue', pizzaMetrics.revenue, 'BTC', 'sum', 'asInt'));
+  metrics.push(createMetric('pizzaRevenue', pizzaMetrics.revenue, 'BTC', 'sum', 'asDouble'));
 
   metrics.push(createMetric('pizzaLatency', pizzaMetrics.latencyTotal, 'ms', 'sum', 'asInt'));
 
@@ -94,10 +94,10 @@ setInterval(async () => {
   metrics.push(createMetric('activeUsers', activeUsers, '1', 'gauge', 'asInt'));
 
   sendMetricToGrafana(metrics);
-}, 10000);
+}, 5000);
 
 function createMetric(metricName, metricValue, metricUnit, metricType, valueType, attributes) {
-  attributes = { ...attributes, source: config.source };
+  attributes = { ...attributes, source: config.metrics.source };
 
   const metric = {
     name: metricName,
@@ -132,6 +132,7 @@ function sendMetricToGrafana(metrics) {
   const body = {
     resourceMetrics: [
       {
+        resource: { attributes: [] },
         scopeMetrics: [
           {
             metrics,
@@ -141,10 +142,10 @@ function sendMetricToGrafana(metrics) {
     ],
   };
 
-  fetch(`${config.endpointUrl}`, {
+  fetch(`${config.metrics.endpointUrl}`, {
     method: 'POST',
     body: JSON.stringify(body),
-    headers: { Authorization: `Bearer ${config.accountId}:${config.apiKey}`, 'Content-Type': 'application/json'}
+    headers: { Authorization: `Bearer ${config.metrics.accountId}:${config.metrics.apiKey}`, 'Content-Type': 'application/json'}
   })
     .then((response) => {
       if(!response.ok) {
