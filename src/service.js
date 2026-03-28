@@ -8,6 +8,20 @@ const config = require('./config.js');
 const metrics = require('./metrics');
 const logger = require('./logger');
 
+process.on('uncaughtException', (err) => {
+  logger.log('error', 'system', {
+    message: err.message,
+    stack: err.stack,
+  });
+});
+
+process.on('unhandledRejection', (reason) => {
+  logger.log('error', 'system', {
+    message: reason?.message || reason,
+    stack: reason?.stack,
+  });
+});
+
 const app = express();
 app.use(express.json());
 app.use(setAuthUser);
