@@ -9,8 +9,8 @@ class Logger {
         path: req.originalUrl,
         method: req.method,
         statusCode: res.statusCode,
-        reqBody: JSON.stringify(req.body),
-        resBody: JSON.stringify(resBody),
+        reqBody: req.body,
+        resBody: resBody,
       };
       const level = this.statusToLogLevel(res.statusCode);
       this.log(level, 'http', logData);
@@ -39,8 +39,49 @@ class Logger {
   }
 
   sanitize(logData) {
-    logData = JSON.stringify(logData);
-    return logData.replace(/\\"password\\":\s*\\"[^"]*\\"/g, '\\"password\\": \\"*****\\"');
+    const SENSITIVE_KEYS = ['password', 'token', 'jwt', 'authorization'];
+
+    const scrub = (val, keyName = '') => {
+      if (val === null || val === undefined) return val;
+
+      if (typeof val === 'string') {
+        const trimmed = val.trim();
+        
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+          try {
+            const parsed = JSON.parse(val);
+            return JSON.stringify(scrub(parsed, keyName));
+          } catch (e) {
+            console.log(e);
+          }
+        }
+
+        const lowKey = keyName.toLowerCase();
+        if (SENSITIVE_KEYS.includes(lowKey)) return '*****';
+        
+        if (val.startsWith('$2a$') || val.startsWith('$2b$') || val.startsWith('$2y$')) return '*****';
+
+        if (keyName === 'params' && val.length > 10) return '*****';
+
+        return val;
+      }
+
+      if (Array.isArray(val)) {
+        return val.map(item => scrub(item, keyName));
+      }
+
+      if (typeof val === 'object') {
+        const cleaned = {};
+        for (const [k, v] of Object.entries(val)) {
+          cleaned[k] = scrub(v, k);
+        }
+        return cleaned;
+      }
+
+      return val;
+    };
+
+    return JSON.stringify(scrub(logData));
   }
 
   sendLogToGrafana(event) {
