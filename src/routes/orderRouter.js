@@ -4,6 +4,7 @@ const { Role, DB } = require('../database/database.js');
 const { authRouter } = require('./authRouter.js');
 const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
 const metrics = require('../metrics');
+const logger = require('../logger');
 
 const orderRouter = express.Router();
 
@@ -91,6 +92,14 @@ orderRouter.post(
     });
     const latency = Date.now() - startTime;
     const j = await r.json();
+
+    logger.log('info', 'factory', {
+      url: `${config.factory.url}/api/order`,
+      requestBody: JSON.stringify({ diner: { id: req.user.id, name: req.user.name, email: req.user.email }, order }),
+      responseBody: j,
+      status: r.status,
+    });
+
     if (r.ok) {
       metrics.pizzaPurchase(true, latency, price);
       res.send({ order, followLinkToEndChaos: j.reportUrl, jwt: j.jwt });
